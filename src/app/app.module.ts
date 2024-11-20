@@ -9,6 +9,7 @@ import { LoginComponent } from './componentes/login/login.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AgendarServicosComponent } from './componentes/agendar-servicos/agendar-servicos.component';
 import {ReactiveFormsModule} from "@angular/forms";
+import {AgendarServicoService} from "./app-core/servicos/agendar-servico.service";
 
 @NgModule({
   declarations: [
@@ -24,7 +25,7 @@ import {ReactiveFormsModule} from "@angular/forms";
     AppRoutingModule,
     ReactiveFormsModule
   ],
-  providers: [],
+  providers: [AgendarServicoService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
