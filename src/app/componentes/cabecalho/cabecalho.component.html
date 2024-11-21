@@ -1,0 +1,24 @@
+<!-- menu superior DO COMPONENTE -->
+<nav class="navbar navbar-expand-lg navbar-light bg-success h-100 ">
+  <a class="navbar-brand" href="#">Pet's Care</a>
+  <button class="navbar-toggler"
+          type="button"
+          data-toggle="collapse"
+          data-target="#navbarNav">
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" [routerLink]="'agendar-servicos'"
+           [routerLinkActive]="'active'" >Visualizar Agendamentos</a>
+      </li>
+    </ul>
+      <ul class="navbar-nav ml-auto">
+      <li class="nav-item">
+        <a class="nav-link" [routerLink]="'login'"
+           [routerLinkActive]="'active'">Login</a>
+      </li>
+    </ul>
+  </div>
+</nav>
+

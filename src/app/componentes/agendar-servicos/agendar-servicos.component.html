@@ -1,0 +1,90 @@
+<div class="container mt-4">
+  <h2>Agendar Serviços
+    <button class="btn btn-primary" (click)="openModal()">
+      <i class="fas fa-plus"></i> Novo Serviço
+    </button>
+  </h2>
+
+  <!-- Tabela de serviços -->
+  <table class="table table-striped table-hover">
+    <thead>
+    <tr>
+      <th>#</th>
+      <th>Serviço</th>
+      <th>Data</th>
+      <th>Horário</th>
+      <th>Animal</th>
+      <th>Status</th>
+      <th>Ações</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let servico of servicos; let i = index">
+      <td>{{ i + 1 }}</td>
+      <td>{{ servico.tipoServico }}</td>
+      <td>{{ servico.dataServico | date: 'shortDate' }}</td>
+      <td>{{ servico.horarioServico }}</td>
+      <td>{{ servico.animal }}</td>
+      <td>{{ servico.statusServico }}</td>
+      <td>
+        <button class="btn btn-warning" (click)="editarServico(i)">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn btn-danger" (click)="removerServico(i)">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal -->
+<div *ngIf="modalAberto" class="modal-backdrop">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form [formGroup]="form" (ngSubmit)="salvarFormServico()">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ servicoEditandoIndex !== null ? 'Editar Serviço' : 'Novo Serviço' }}</h5>
+          <button type="button" class="btn-close" (click)="closeModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="tipoServico" class="form-label">Tipo de Serviço</label>
+            <select id="tipoServico" class="form-control" formControlName="tipoServico">
+              <option value="BANHO">Banho</option>
+              <option value="TOSA">Tosa</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="dataServico" class="form-label">Data do Serviço</label>
+            <input id="dataServico" type="date" class="form-control" formControlName="dataServico">
+          </div>
+          <div class="mb-3">
+            <label for="horarioServico" class="form-label">Horário</label>
+            <select id="horarioServico" class="form-control" formControlName="horarioServico">
+              <option *ngFor="let horario of horariosDisponiveis" [value]="horario">{{ horario }}</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="animal" class="form-label">Tipo de Animal</label>
+            <select id="animal" class="form-control" formControlName="animal">
+              <option value="CACHORRO">Cachorro</option>
+              <option value="GATO">Gato</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="statusServico" class="form-label">Status do Serviço</label>
+            <select id="statusServico" class="form-control" formControlName="statusServico">
+              <option *ngFor="let status of statusList" [value]="status">{{ status }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Fechar</button>
+          <button type="submit" class="btn btn-success">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
