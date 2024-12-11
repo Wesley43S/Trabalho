@@ -1,92 +1,120 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AgendarServicoService} from "../../app-core/servicos/agendar-servico.service";
-import { StatusServico } from '../../app-core/model/status-servico';
+import {AgendarServicoService} from "../../app-core/servicos/agendar-servico.service";
+import {Servico} from "../../app-core/model/servico";
+import Swal from 'sweetalert2';
+import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 
 @Component({
   selector: 'app-agendar-servicos',
   templateUrl: './agendar-servicos.component.html',
   styleUrls: ['./agendar-servicos.component.css']
 })
+
 export class AgendarServicosComponent implements OnInit {
   servicos: any[] = [];
-  form: FormGroup;
   horariosDisponiveis: string[] = [];
+  statusList = ['AGENDADO', 'EM ANDAMENTO', 'FINALIZADO'];
+
+  form!: FormGroup;
   modalAberto: boolean = false;
   servicoEditandoIndex: number | null = null;
-  statusList = StatusServico.getAllStatus();
 
   constructor(
-    private fb: FormBuilder,
-    private agendarServicoService: AgendarServicoService
-  ) {
+    private agendarServicoService: AgendarServicoService,
+    private fb: FormBuilder
+  ) {}
+
+  ngOnInit(): void {
+    this.carregarServicos();
+    this.horariosDisponiveis = this.agendarServicoService.gerarHorariosDisponiveis();
     this.form = this.fb.group({
-      tipoServico: ['BANHO', Validators.required],
+      tipoServico: ['', Validators.required],
       dataServico: ['', Validators.required],
       horarioServico: ['', Validators.required],
-      animal: ['CACHORRO', Validators.required],
-      statusServico: ['NOVA', Validators.required],
+      animal: ['', Validators.required],
+      statusServico: ['AGENDADO', Validators.required]
     });
   }
 
-  ngOnInit(): void {
-    this.servicos = this.agendarServicoService.getServicos();
-    this.horariosDisponiveis = this.agendarServicoService.gerarHorariosDisponiveis();
+  async carregarServicos(): Promise<void> {
+    try {
+      this.servicos = await this.agendarServicoService.getServicos();
+    } catch (error) {
+      console.error('Erro ao carregar serviços:', error);
+    }
   }
 
-  openModal(): void {
+  openModal(index: number | null = null): void {
+    this.servicoEditandoIndex = index;
+
+    if (index !== null) {
+      // Carregar dados do serviço selecionado no formulário
+      const servico = this.servicos[index];
+      this.form.patchValue(servico);
+    } else {
+      // Resetar o formulário para novo serviço
+      this.form.reset({
+        tipoServico: '',
+        dataServico: '',
+        horarioServico: '',
+        animal: '',
+        statusServico: 'AGENDADO'
+      });
+    }
+
     this.modalAberto = true;
   }
 
   closeModal(): void {
     this.modalAberto = false;
-    this.form.reset({
-      tipoServico: 'BANHO',
-      statusServico: 'NOVA',
-      animal: 'CACHORRO'
-    });
-    this.servicoEditandoIndex = null; // Reseta índice de edição
+    this.servicoEditandoIndex = null;
   }
+  editarServico(index: number): void {
+    this.openModal(index);
+  }
+  async salvarFormServico(): Promise<void> {
+    if (this.form.invalid) return;
 
-  salvarFormServico(): void {
-    if (this.form.valid) {
-      const novoServico = this.form.value;
+    const servico = this.form.value;
 
-      // Verifica conflito usando o serviço
-      const conflito = this.agendarServicoService.verificarConflito(novoServico, this.servicoEditandoIndex);
-      if (conflito) {
-        alert('Erro: Já existe um serviço do mesmo tipo marcado para este horário.');
-        return;
-      }
-
+    try {
       if (this.servicoEditandoIndex !== null) {
-        // Edita serviço existente
-        this.agendarServicoService.editarServico(this.servicoEditandoIndex, novoServico);
-        this.servicoEditandoIndex = null;
+        const id = this.servicos[this.servicoEditandoIndex].id;
+        await this.agendarServicoService.editarServico(id, servico);
       } else {
-        // Adiciona novo serviço
-        this.agendarServicoService.adicionarServico(novoServico);
+        await this.agendarServicoService.adicionarServico(servico);
       }
 
-      this.servicos = this.agendarServicoService.getServicos(); // Atualiza a lista
+      this.carregarServicos();
       this.closeModal();
-    } else {
-      alert('Formulário inválido!');
+    } catch (error) {
+      console.error('Erro ao salvar serviço:', error);
     }
   }
 
-  editarServico(index: number): void {
-    const servico = this.servicos[index];
-    this.form.patchValue(servico);
-    this.servicoEditandoIndex = index; // Define índice em edição
-    this.openModal();
-  }
+  async removerServico(index: number): Promise<void> {
+    const id = this.servicos[index].id;
 
-  removerServico(index: number): void {
-    const confirmacao = confirm('Tem certeza que deseja remover este serviço?');
-    if (confirmacao) {
-      this.agendarServicoService.removerServico(index);
-      this.servicos = this.agendarServicoService.getServicos();
+    const result = await Swal.fire({
+      title: 'Tem certeza?',
+      text: 'Você realmente deseja remover este serviço?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sim, remover',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await this.agendarServicoService.removerServico(id);
+        await this.carregarServicos();
+        Swal.fire('Removido!', 'O serviço foi removido com sucesso.', 'success');
+      } catch (error) {
+        console.error('Erro ao remover serviço:', error);
+        Swal.fire('Erro', 'Ocorreu um erro ao tentar remover o serviço.', 'error');
+      }
     }
   }
 }
+
+
