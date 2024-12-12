@@ -62,7 +62,7 @@ export class AgendarServicoService extends Dexie {
   }
 
   async verificarConflito(novoServico: any, indexIgnorado: number | null): Promise<boolean> {
-    // Buscar qualquer serviço com o mesmo horário e tipo de serviço
+    // Busca qualquer serviço com o mesmo horário e tipo de serviço
     const servicoExistente = await this.servicos
       .where({
         dataServico: novoServico.dataServico,
@@ -82,7 +82,7 @@ export class AgendarServicoService extends Dexie {
       return false;
     }
 
-    return true; // Conflito encontrado
+    return true;
   }
   gerarHorariosDisponiveis(): string[] {
     const horariosManha = this.gerarIntervalos('08:00', '11:30');
@@ -106,7 +106,7 @@ export class AgendarServicoService extends Dexie {
       const minutoFormatado = inicioDate.getMinutes().toString().padStart(2, '0');
       horarios.push(`${horaFormatada}:${minutoFormatado}`);
 
-      // Incrementa 30 minutos
+
       inicioDate.setMinutes(inicioDate.getMinutes() + 30);
     }
     return horarios;
